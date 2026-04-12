@@ -2410,3 +2410,30 @@ button {
   }
 }
 
+/* ================= ANIMAÇÃO DAS ABAS ================= */
+.aba {
+  display: none;
+  opacity: 0;
+  transform: translateY(14px) scale(0.98);
+  filter: blur(4px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    filter 0.3s ease;
+}
+
+.aba.active {
+  display: block;
+}
+
+.aba.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+.aba.hiding {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+  filter: blur(3px);
+}
