@@ -3,7 +3,7 @@ let morte = {
   falhas: [false, false, false]
 };
 
-
+let dominio = [false, false, false, false, false, false];
 let editandoItem = -1;
 let editandoArma = -1;
 let editandoPoder = -1;
@@ -197,6 +197,21 @@ function editarArma(index) {
       <label class="popup-label">Descrição</label>
       <textarea id="editArmaDesc">${arma.desc || ""}</textarea>
 
+      <label class="popup-label">
+        <input type="checkbox" id="editArmaTemCargas" ${arma.temCargas ? "checked" : ""} onchange="toggleEditCampoCargas()">
+        Usa cargas
+      </label>
+
+      <input
+        id="editArmaMaxCargas"
+        type="number"
+        min="1"
+        max="20"
+        placeholder="Qtd. de cargas"
+        value="${arma.maxCargas || ""}"
+        style="display:${arma.temCargas ? "block" : "none"};"
+      >
+
       <button class="popup-salvar-btn" onclick="salvarEdicaoArma(${index})">
         Salvar
       </button>
@@ -204,6 +219,20 @@ function editarArma(index) {
   `;
 
   abrirPopup("Editar arma", html, true, null);
+}
+
+function toggleEditCampoCargas() {
+  const check = document.getElementById("editArmaTemCargas");
+  const input = document.getElementById("editArmaMaxCargas");
+
+  if (!check || !input) return;
+
+  if (check.checked) {
+    input.style.display = "block";
+  } else {
+    input.style.display = "none";
+    input.value = "";
+  }
 }
 
 function editarPoder(index) {
@@ -293,12 +322,34 @@ function salvarEdicaoArma(index) {
   const dano = document.getElementById("editArmaDano").value.trim();
   const desc = document.getElementById("editArmaDesc").value.trim();
 
+  const temCargas = !!document.getElementById("editArmaTemCargas")?.checked;
+  const maxCargas = temCargas ? (parseInt(document.getElementById("editArmaMaxCargas")?.value) || 0) : 0;
+
   if (!nome) return;
+  if (temCargas && maxCargas <= 0) return;
+
+  const armaAnterior = armas[index];
+
+  let cargasGastas = [];
+  if (temCargas) {
+    if (
+      armaAnterior?.temCargas &&
+      armaAnterior.maxCargas === maxCargas &&
+      Array.isArray(armaAnterior.cargasGastas)
+    ) {
+      cargasGastas = armaAnterior.cargasGastas;
+    } else {
+      cargasGastas = Array(maxCargas).fill(false);
+    }
+  }
 
   armas[index] = {
     nome,
     dano,
-    desc
+    desc,
+    temCargas,
+    maxCargas,
+    cargasGastas
   };
 
   renderArmas();
@@ -313,9 +364,19 @@ function trocarAba(id, btn = null) {
   const novaAba = document.getElementById(id);
   const abaAtual = document.querySelector(".aba.active");
 
+  const hud = document.querySelector(".estilo-topo-fixo");
+  const botoes = document.querySelector(".botoes-estilo-fixos");
+
+  if (id === "estilo") {
+    if (hud) hud.style.display = "block";
+    if (botoes) botoes.style.display = "flex";
+  } else {
+    if (hud) hud.style.display = "none";
+    if (botoes) botoes.style.display = "none";
+  }
+
   if (!novaAba) return;
 
-  // botão ativo
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
 
   if (btn) {
@@ -325,7 +386,6 @@ function trocarAba(id, btn = null) {
     if (botao) botao.classList.add("active");
   }
 
-  // anima saída
   if (abaAtual && abaAtual !== novaAba) {
     abaAtual.classList.remove("show");
     abaAtual.classList.add("hiding");
@@ -336,7 +396,6 @@ function trocarAba(id, btn = null) {
     }, 200);
   }
 
-  // prepara nova aba
   abas.forEach(aba => {
     if (aba !== novaAba) {
       aba.classList.remove("show", "hiding");
@@ -369,6 +428,17 @@ function voltarInicio() {
 
   if (telaInicial) telaInicial.style.display = "block";
   if (ficha) ficha.style.display = "none";
+}
+
+function toggleDiario() {
+  const box = document.getElementById("diario-box");
+  if (!box) return;
+
+  if (box.style.display === "none" || box.style.display === "") {
+    box.style.display = "block";
+  } else {
+    box.style.display = "none";
+  }
 }
 
 /* ================= PERSONAGENS ================= */
@@ -411,6 +481,11 @@ function criarPersonagem() {
     idade: "",
     altura: "",
     imagem: "",
+    antecedentes: "",
+    idiomas: "",
+    resistencias: "",
+    diario: "",
+    proficienciasExtras: "",
 
     vidaMax: 50,
     vidaAtual: 50,
@@ -437,7 +512,7 @@ function criarPersonagem() {
     dtAtributo: 0,
     dtProf: 2,
     pontosEstilo: 0,
-
+    dominio: [false, false, false, false, false, false],
     morte: {
       sucessos: [false, false, false],
       falhas: [false, false, false]
@@ -475,6 +550,10 @@ function carregarPersonagem(index) {
   document.getElementById("vidaMax").value = p.vidaMax ?? 50;
   document.getElementById("ca").value = p.ca ?? "";
   document.getElementById("deslocamento").value = p.deslocamento ?? 9;
+  document.getElementById("antecedentes").value = p.antecedentes || "";
+  document.getElementById("idiomas").value = p.idiomas || "";
+  document.getElementById("resistencias").value = p.resistencias || "";
+  document.getElementById("diario").value = p.diario || "";
 
   document.getElementById("forca").value = p.forca ?? 10;
   document.getElementById("destreza").value = p.destreza ?? 10;
@@ -490,6 +569,8 @@ function carregarPersonagem(index) {
   const dtBase = document.getElementById("dtBase");
   const dtAtributo = document.getElementById("dtAtributo");
   const dtProf = document.getElementById("dtProf");
+  const profExtras = document.getElementById("proficienciasExtras");
+  if (profExtras) profExtras.value = p.proficienciasExtras || "";
 
   if (dtBase) dtBase.value = p.dtBase ?? 8;
   if (dtAtributo) dtAtributo.value = p.dtAtributo ?? 0;
@@ -512,6 +593,7 @@ function carregarPersonagem(index) {
   saves = p.saves || {};
   exaustao = p.exaustao ?? 0;
   pontosEstilo = p.pontosEstilo ?? 0;
+  dominio = p.dominio || [false, false, false, false, false, false];
   morte = p.morte || {
     sucessos: [false, false, false],
     falhas: [false, false, false]
@@ -530,6 +612,7 @@ function carregarPersonagem(index) {
   atualizarDT();
   atualizarEstilo();
   entrarFicha();
+  renderDominio();
 }
 
 /* ================= SALVAR ================= */
@@ -545,7 +628,12 @@ function salvarTudo() {
   p.raca = document.getElementById("raca").value;
   p.idade = document.getElementById("idade").value;
   p.altura = document.getElementById("altura").value;
+  p.antecedentes = document.getElementById("antecedentes")?.value || "";
+  p.idiomas = document.getElementById("idiomas")?.value || "";
+  p.resistencias = document.getElementById("resistencias")?.value || "";
+  p.diario = document.getElementById("diario")?.value || "";
   p.imagem = imagemBase64;
+  p.proficienciasExtras = document.getElementById("proficienciasExtras")?.value || "";
 
   p.vidaMax = get("vidaMax");
   p.vidaAtual = vidaAtual;
@@ -569,6 +657,8 @@ function salvarTudo() {
   p.exaustao = exaustao;
   p.pontosEstilo = pontosEstilo;
   p.morte = morte;
+  p.dominio = dominio;
+
 
   const inspiracao = document.getElementById("inspiracao");
   const dtBase = document.getElementById("dtBase");
@@ -604,6 +694,35 @@ function previewImagem() {
     renderPersonagens();
   };
   reader.readAsDataURL(file);
+}
+
+function toggleCampoCargas() {
+  const check = document.getElementById("armaTemCargas");
+  const input = document.getElementById("armaMaxCargas");
+
+  if (!check || !input) return;
+
+  if (check.checked) {
+    input.style.display = "block";
+  } else {
+    input.style.display = "none";
+    input.value = "";
+  }
+}
+
+function toggleDominio(index) {
+  dominio[index] = !dominio[index];
+  renderDominio();
+  salvarTudo();
+}
+
+function renderDominio() {
+  const checks = document.querySelectorAll(".dominio-check");
+  if (!checks.length) return;
+
+  checks.forEach((check, i) => {
+    check.classList.toggle("ativo", !!dominio[i]);
+  });
 }
 
 /* ================= INVENTÁRIO ================= */
@@ -646,6 +765,9 @@ function renderInv() {
     li.innerHTML = `
       <div class="item-info" onclick="verItem(${index})">
         <strong class="item-nome">${item.nome || "Sem nome"}</strong>
+        <p class="item-preview">
+          ${item.desc ? item.desc.substring(0, 60) + (item.desc.length > 60 ? "..." : "") : "Sem descrição"}
+        </p>
       </div>
 
       <div class="item-acoes">
@@ -696,15 +818,36 @@ function addArma() {
   const descEl = document.getElementById("armaDesc");
   const desc = descEl ? descEl.value.trim() : "";
 
+  const temCargasEl = document.getElementById("armaTemCargas");
+  const maxCargasEl = document.getElementById("armaMaxCargas");
+
+  const temCargas = !!temCargasEl?.checked;
+  const maxCargas = temCargas ? (parseInt(maxCargasEl?.value) || 0) : 0;
+
   if (!nome) return;
+  if (temCargas && maxCargas <= 0) return;
 
   const novaArma = {
     nome,
     dano,
-    desc
+    desc,
+    temCargas,
+    maxCargas,
+    cargasGastas: temCargas ? Array(maxCargas).fill(false) : []
   };
 
   if (editandoArma >= 0) {
+    const armaAnterior = armas[editandoArma];
+
+    if (
+      armaAnterior?.temCargas &&
+      temCargas &&
+      armaAnterior.maxCargas === maxCargas &&
+      Array.isArray(armaAnterior.cargasGastas)
+    ) {
+      novaArma.cargasGastas = armaAnterior.cargasGastas;
+    }
+
     armas[editandoArma] = novaArma;
     editandoArma = -1;
   } else {
@@ -717,6 +860,12 @@ function addArma() {
   document.getElementById("armaNome").value = "";
   document.getElementById("armaDano").value = "";
   if (descEl) descEl.value = "";
+
+  if (temCargasEl) temCargasEl.checked = false;
+  if (maxCargasEl) {
+    maxCargasEl.value = "";
+    maxCargasEl.style.display = "none";
+  }
 }
 
 function renderArmas() {
@@ -729,10 +878,30 @@ function renderArmas() {
     const li = document.createElement("li");
     li.className = "arma-card";
 
+    const cargasHTML = arma.temCargas && arma.maxCargas > 0
+      ? `
+        <div class="arma-cargas-box">
+          <span class="arma-cargas-label">Cargas</span>
+          <div class="arma-cargas-checks">
+            ${Array.from({ length: arma.maxCargas }, (_, i) => `
+              <div
+                class="arma-carga-check ${arma.cargasGastas?.[i] ? "ativo" : ""}"
+                onclick="event.stopPropagation(); toggleCargaArma(${index}, ${i})"
+              ></div>
+            `).join("")}
+          </div>
+        </div>
+      `
+      : "";
+
     li.innerHTML = `
       <div class="arma-info" onclick="verArma(${index})">
         <strong class="arma-nome">${arma.nome || "Sem nome"}</strong>
-        <p class="arma-dano">${arma.dano || "Sem dano"}</p>
+        <p class="arma-dano-preview">${arma.dano || "Sem dano"}</p>
+        <p class="arma-desc-preview">
+          ${arma.desc ? arma.desc.substring(0, 60) + (arma.desc.length > 60 ? "..." : "") : "Sem descrição"}
+        </p>
+        ${cargasHTML}
       </div>
 
       <div class="item-acoes">
@@ -743,6 +912,15 @@ function renderArmas() {
 
     ul.appendChild(li);
   });
+}
+
+function toggleCargaArma(indexArma, indexCarga) {
+  const arma = armas[indexArma];
+  if (!arma || !arma.temCargas || !Array.isArray(arma.cargasGastas)) return;
+
+  arma.cargasGastas[indexCarga] = !arma.cargasGastas[indexCarga];
+  renderArmas();
+  salvarTudo();
 }
 
 function verArma(index) {
@@ -841,16 +1019,28 @@ function renderPoderes() {
     li.className = "poder-card";
 
     li.innerHTML = `
-      <div class="poder-info" onclick="verPoder(${index})">
-        <strong class="poder-nome">${icone} ${poder.nome || "Sem nome"}</strong>
-        ${poder.dano ? `<div class="popup-tags" style="margin-top:6px;"><span class="tag-dano">${poder.dano}</span></div>` : ""}
-      </div>
+  <div class="poder-info" onclick="verPoder(${index})">
+    <div class="poder-topo">
+      <span class="poder-icone">${getIconeTipo(poder.tipo)}</span>
+      <span class="poder-nome">${poder.nome || "Sem nome"}</span>
+      <span class="poder-tipo ${getClasseTipo(poder.tipo)}">${poder.tipo || "Padrão"}</span>
+    </div>
 
-      <div class="item-acoes">
-        <button type="button" class="btn-editar" onclick="event.stopPropagation(); editarPoder(${index})">✏️</button>
-        <button type="button" class="poder-remover" onclick="event.stopPropagation(); removerPoder(${index})">X</button>
-      </div>
-    `;
+    <div class="poder-meta">
+      <span class="poder-tag">${poder.dano || "Sem dano"}</span>
+      <span class="poder-tag">${poder.circulo || "Sem círculo"}</span>
+    </div>
+
+    <p class="poder-desc">
+      ${poder.desc ? poder.desc.substring(0, 80) + (poder.desc.length > 80 ? "..." : "") : "Sem descrição"}
+    </p>
+  </div>
+
+  <div class="item-acoes">
+    <button type="button" class="btn-editar" onclick="editarPoder(${index})">✏️</button>
+    <button type="button" class="poder-remover" onclick="removerPoder(${index})">X</button>
+  </div>
+`;
 
     ul.appendChild(li);
   });
@@ -1400,8 +1590,8 @@ function getDanoBaseEstilo() {
 }
 
 function calcularDanoEstilo() {
-  const danoEl = document.getElementById("danoEstilo");
-  const tipoEl = document.getElementById("tipoDanoEstilo");
+  const danoEl = document.getElementById("danoTotal");
+  const tipoEl = document.getElementById("tipoDano");
   if (!danoEl || !tipoEl) return;
 
   let dano = getDanoBaseEstilo();
@@ -1455,28 +1645,24 @@ function renderHabilidadesEstilo() {
 function atualizarEstilo() {
   const pontosEl = document.getElementById("pontosEstilo");
   const rankEl = document.getElementById("rankEstilo");
-  const rankTopoEl = document.getElementById("rankTopoEstilo");
   const barraEl = document.getElementById("progressoEstilo");
 
-  if (!pontosEl || !rankEl || !rankTopoEl || !barraEl) return;
+  if (!pontosEl || !rankEl || !barraEl) return;
 
   const rank = getRankEstilo(pontosEstilo);
+
   pontosEl.textContent = pontosEstilo;
   barraEl.style.width = `${(pontosEstilo / maxEstilo) * 100}%`;
 
+  // limpa classes antigas
   rankEl.className = "";
-  rankTopoEl.className = "";
 
   if (!rank) {
     rankEl.textContent = "-";
-    rankTopoEl.textContent = "-";
     rankEl.classList.add("sem-rank");
-    rankTopoEl.classList.add("sem-rank");
   } else {
     rankEl.textContent = rank;
-    rankTopoEl.textContent = rank;
     rankEl.classList.add(rank);
-    rankTopoEl.classList.add(rank);
   }
 
   renderHabilidadesEstilo();
