@@ -2999,3 +2999,76 @@ button {
   justify-content: flex-end;
   margin-top: 10px;
 }
+
+.poder-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.poder-info {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.poder-acoes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-ordem.medieval,
+.btn-editar.medieval,
+.poder-remover {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-ordem.medieval,
+.btn-editar.medieval {
+  border: 1px solid #8f7447;
+  background: linear-gradient(180deg, #6f5a45 0%, #4e3d2d 100%);
+  color: #f8f1df;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 2px 6px rgba(0,0,0,0.35);
+  transition: 0.2s ease;
+}
+
+.btn-ordem.medieval:hover,
+.btn-editar.medieval:hover {
+  background: linear-gradient(180deg, #8a7357 0%, #5f4a36 100%);
+  transform: scale(1.05);
+}
+
+.poder-remover {
+  border: none;
+  background: #b91c1c;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.poder-remover:hover {
+  background: #dc2626;
+}
+
+/* animação ao mover poderes */
+.poder-card {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.poder-card.animando {
+  transform: scale(0.95);
+  opacity: 0.5;
+}
