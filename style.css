@@ -2975,3 +2975,27 @@ button {
   transform: translateX(21px);
   background: #2f2822;
 }
+
+#listaAliados .item-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+#listaAliados .item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+#listaAliados .item-acoes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.add-linha {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
