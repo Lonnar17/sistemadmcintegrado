@@ -7,6 +7,7 @@ let dominio = [false, false, false, false, false, false];
 let editandoItem = -1;
 let editandoArma = -1;
 let editandoPoder = -1;
+let editandoAliado = -1;
 let vidaAtual = 50;
 let vidaTemp = 0;
 let inventario = [];
@@ -503,6 +504,7 @@ function criarPersonagem() {
 
     inventario: [],
     armas: [],
+    aliados: [],
     poderes: [],
     profs: {},
     saves: {},
@@ -522,6 +524,115 @@ function criarPersonagem() {
   personagens.push(novo);
   salvarPersonagens();
   renderPersonagens();
+}
+
+function renderAliados() {
+  const ul = document.getElementById("listaAliados");
+  if (!ul || personagemAtual === null) return;
+
+  ul.innerHTML = "";
+
+  const p = personagens[personagemAtual];
+  if (!Array.isArray(p.aliados)) {
+    p.aliados = [];
+  }
+
+  p.aliados.forEach((aliado, index) => {
+    const li = document.createElement("li");
+    li.className = "item-card";
+
+    li.innerHTML = `
+      <div class="item-info">
+        <strong>${aliado.nome}</strong>
+        <div class="item-preview">
+          ${aliado.desc || ""}
+        </div>
+      </div>
+
+      <div class="item-acoes">
+        <button type="button" class="btn-editar" onclick="event.stopPropagation(); editarAliado(${index})">✏️</button>
+        <button type="button" class="item-remover" onclick="event.stopPropagation(); removerAliado(${index})">X</button>
+      </div>
+    `;
+
+    ul.appendChild(li);
+  });
+}
+
+function editarAliado(index) {
+  const p = personagens[personagemAtual];
+  if (!p || !Array.isArray(p.aliados)) return;
+
+  const aliado = p.aliados[index];
+  if (!aliado) return;
+
+  const html = `
+    <div class="popup-form">
+      <label class="popup-label">Nome</label>
+      <input id="editAliadoNome" value="${aliado.nome || ""}">
+
+      <label class="popup-label">Descrição</label>
+      <textarea id="editAliadoDesc">${aliado.desc || ""}</textarea>
+
+      <button class="popup-salvar-btn" onclick="salvarEdicaoAliado(${index})">
+        Salvar
+      </button>
+    </div>
+  `;
+
+  abrirPopup("Editar aliado", html, true, null);
+}
+
+function salvarEdicaoAliado(index) {
+  const p = personagens[personagemAtual];
+  if (!p || !Array.isArray(p.aliados)) return;
+
+  const nome = document.getElementById("editAliadoNome").value.trim();
+  const desc = document.getElementById("editAliadoDesc").value.trim();
+
+  if (!nome) return;
+
+  p.aliados[index] = {
+    nome,
+    desc
+  };
+
+  salvarTudo();
+  renderAliados();
+  fecharPopup();
+}
+
+function adicionarAliado() {
+  const nome = document.getElementById("aliadoNome").value.trim();
+  const desc = document.getElementById("aliadoDesc").value.trim();
+
+  if (!nome) return;
+
+  const p = personagens[personagemAtual];
+  if (!Array.isArray(p.aliados)) {
+    p.aliados = [];
+  }
+
+  p.aliados.push({
+    nome,
+    desc
+  });
+
+  document.getElementById("aliadoNome").value = "";
+  document.getElementById("aliadoDesc").value = "";
+
+  salvarTudo();
+  renderAliados();
+}
+
+function removerAliado(index) {
+  const p = personagens[personagemAtual];
+  if (!p || !Array.isArray(p.aliados)) return;
+
+  p.aliados.splice(index, 1);
+
+  salvarTudo();
+  renderAliados();
 }
 
 function deletarPersonagem(index) {
@@ -612,6 +723,7 @@ function carregarPersonagem(index) {
   atualizarDT();
   atualizarEstilo();
   entrarFicha();
+  renderAliados();
   renderDominio();
 }
 
@@ -634,6 +746,7 @@ function salvarTudo() {
   p.diario = document.getElementById("diario")?.value || "";
   p.imagem = imagemBase64;
   p.proficienciasExtras = document.getElementById("proficienciasExtras")?.value || "";
+  p.aliados = personagens[personagemAtual].aliados || [];
 
   p.vidaMax = get("vidaMax");
   p.vidaAtual = vidaAtual;
