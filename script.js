@@ -1119,6 +1119,30 @@ function addPoder() {
   document.getElementById("poderDesc").value = "";
 }
 
+function moverPoder(index, direcao) {
+  const lista = document.querySelectorAll(".poder-card");
+
+  if (!lista[index]) return;
+
+  // anima o item atual
+  lista[index].classList.add("animando");
+
+  const novoIndex = index + direcao;
+
+  if (novoIndex < 0 || novoIndex >= poderes.length) {
+    lista[index].classList.remove("animando");
+    return;
+  }
+
+  setTimeout(() => {
+    // troca no array
+    [poderes[index], poderes[novoIndex]] = [poderes[novoIndex], poderes[index]];
+
+    renderPoderes();
+    salvarTudo();
+  }, 150);
+}
+
 function renderPoderes() {
   const ul = document.getElementById("listaPoderes");
   if (!ul) return;
@@ -1126,34 +1150,34 @@ function renderPoderes() {
   ul.innerHTML = "";
 
   poderes.forEach((poder, index) => {
-    const icone = getIconeTipo(poder.tipo);
-
     const li = document.createElement("li");
     li.className = "poder-card";
 
     li.innerHTML = `
-  <div class="poder-info" onclick="verPoder(${index})">
-    <div class="poder-topo">
-      <span class="poder-icone">${getIconeTipo(poder.tipo)}</span>
-      <span class="poder-nome">${poder.nome || "Sem nome"}</span>
-      <span class="poder-tipo ${getClasseTipo(poder.tipo)}">${poder.tipo || "Padrão"}</span>
-    </div>
+      <div class="poder-info" onclick="verPoder(${index})">
+        <div class="poder-topo">
+          <span class="poder-icone">${getIconeTipo(poder.tipo)}</span>
+          <span class="poder-nome">${poder.nome || "Sem nome"}</span>
+          <span class="poder-tipo ${getClasseTipo(poder.tipo)}">${poder.tipo || "Padrão"}</span>
+        </div>
 
-    <div class="poder-meta">
-      <span class="poder-tag">${poder.dano || "Sem dano"}</span>
-      <span class="poder-tag">${poder.circulo || "Sem círculo"}</span>
-    </div>
+        <div class="poder-meta">
+          <span class="poder-tag">${poder.dano || "Sem dano"}</span>
+          <span class="poder-tag">${poder.circulo || "Sem círculo"}</span>
+        </div>
 
-    <p class="poder-desc">
-      ${poder.desc ? poder.desc.substring(0, 80) + (poder.desc.length > 80 ? "..." : "") : "Sem descrição"}
-    </p>
-  </div>
+        <p class="poder-desc">
+          ${poder.desc ? poder.desc.substring(0, 80) + (poder.desc.length > 80 ? "..." : "") : "Sem descrição"}
+        </p>
+      </div>
 
-  <div class="item-acoes">
-    <button type="button" class="btn-editar" onclick="editarPoder(${index})">✏️</button>
-    <button type="button" class="poder-remover" onclick="removerPoder(${index})">X</button>
-  </div>
-`;
+      <div class="poder-acoes">
+        <button type="button" class="btn-ordem medieval" onclick="event.stopPropagation(); moverPoder(${index}, -1)">↑</button>
+        <button type="button" class="btn-ordem medieval" onclick="event.stopPropagation(); moverPoder(${index}, 1)">↓</button>
+        <button type="button" class="btn-editar medieval" onclick="event.stopPropagation(); editarPoder(${index})">🖊️</button>
+        <button type="button" class="poder-remover" onclick="event.stopPropagation(); removerPoder(${index})">X</button>
+      </div>
+    `;
 
     ul.appendChild(li);
   });
