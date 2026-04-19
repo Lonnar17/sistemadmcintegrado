@@ -269,25 +269,42 @@
       </div>
 
       <div class="secao-toggle">
-        <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxArmadurasForm', this)">
-          <span>Armaduras</span>
-          <span class="setinha">▼</span>
-        </h2>
+  <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxArmadurasForm', this)">
+    <span>Armaduras</span>
+    <span class="setinha">▼</span>
+  </h2>
 
-        <div id="boxArmadurasForm" class="conteudo-toggle">
-          <div class="armadura-add">
-            <input id="armaduraNome" placeholder="Nome da armadura">
-            <input id="armaduraCA" placeholder="CA (ex: 16)">
-            <textarea id="armaduraDesc" placeholder="Descrição da armadura"></textarea>
+  <div id="boxArmadurasForm" class="conteudo-toggle aberto">
+    <div class="armadura-add">
+      <input id="armaduraNome" placeholder="Nome da armadura">
+      <input id="armaduraCA" placeholder="CA (ex: 16)">
+      <textarea id="armaduraDesc" placeholder="Descrição da armadura"></textarea>
 
-            <div class="add-linha">
-              <button class="inv-add-btn" onclick="addArmadura()">+</button>
-            </div>
-          </div>
-        </div>
-
-        <ul id="listaArmaduras" class="lista-sempre-visivel"></ul>
+      <div class="toggle-cargas">
+        <span class="toggle-cargas-texto">Usa cargas</span>
+        <label class="switch-cargas">
+          <input type="checkbox" id="armaduraTemCargas" onchange="toggleCampoCargasArmadura()">
+          <span class="slider-cargas"></span>
+        </label>
       </div>
+
+      <input
+        id="armaduraMaxCargas"
+        type="number"
+        min="1"
+        max="20"
+        placeholder="Qtd. de cargas"
+        style="display:none;"
+      >
+
+      <div class="add-linha">
+        <button class="inv-add-btn" onclick="addArmadura()">+</button>
+      </div>
+    </div>
+  </div>
+
+  <ul id="listaArmaduras" class="lista-sempre-visivel"></ul>
+</div>
 
       <div class="secao-toggle">
         <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxDominio', this)">
@@ -367,34 +384,35 @@
 
     <!-- ================= INVENTÁRIO ================= -->
     <div class="aba" id="inventario" style="display:none;">
-      <h2 class="titulo-secao">Inventário</h2>
+  <h2 class="titulo-secao">Inventário</h2>
 
-      <button class="btn-diario" onclick="toggleDiario()">📖 Diário</button>
+  <button class="btn-diario" onclick="toggleDiario()">📖 Diário</button>
 
-      <div id="diario-box" class="diario-box" style="display:none;">
-        <textarea id="diario" oninput="salvarTudo()" placeholder="Escreva aqui seu diário, anotações, pistas, missões, nomes, eventos..."></textarea>
+  <div id="diario-box" class="diario-box" style="display:none;">
+    <textarea id="diario" oninput="salvarTudo()" placeholder="Escreva aqui seu diário, anotações, pistas, missões, nomes, eventos..."></textarea>
+  </div>
+
+  <div class="secao-toggle">
+    <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxItensForm', this)">
+      <span>Itens</span>
+      <span class="setinha">▼</span>
+    </h2>
+
+    <div id="boxItensForm" class="conteudo-toggle">
+      <div class="inv-add">
+        <input id="itemNome" placeholder="Nome do item">
+        <textarea id="itemDesc" placeholder="Descrição"></textarea>
+        <input id="itemQtd" type="number" min="1" placeholder="Quantidade">
       </div>
 
-      <div class="secao-toggle">
-        <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxItensForm', this)">
-  <span>Itens</span>
-  <span class="setinha">▼</span>
-</h2>
-
-        <div id="boxItensForm" class="conteudo-toggle">
-          <div class="inv-add">
-            <input id="item" placeholder="Nome do item">
-            <textarea id="itemDesc" placeholder="Descrição"></textarea>
-          </div>
-
-          <div class="add-linha">
-            <button class="inv-add-btn" onclick="addItem()">+</button>
-          </div>
-        </div>
-
-        <ul id="lista" class="lista-sempre-visivel"></ul>
+      <div class="add-linha">
+        <button class="inv-add-btn" onclick="addItem()">+</button>
       </div>
     </div>
+
+    <ul id="lista" class="lista-sempre-visivel"></ul>
+  </div>
+</div>
 
     <!-- ================= PODERES ================= -->
     <div class="aba" id="poderes" style="display:none;">
