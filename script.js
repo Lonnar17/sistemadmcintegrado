@@ -17,6 +17,8 @@ let profs = {};
 let saves = {};
 let imagemBase64 = "";
 let exaustao = 0;
+let armaduras = [];
+let editandoArmadura = -1;
 
 let personagens = JSON.parse(localStorage.getItem("personagens")) || [];
 let personagemAtual = null;
@@ -76,6 +78,57 @@ function normalizarTipo(tipo) {
     .trim()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
+}
+
+function toggleSecao(id, el) {
+  const box = document.getElementById(id);
+  if (!box) return;
+
+  const aberta = box.classList.contains("aberto");
+
+  if (aberta) {
+    box.style.maxHeight = box.scrollHeight + "px";
+
+    requestAnimationFrame(() => {
+      box.style.maxHeight = "0px";
+      box.style.opacity = "0";
+    });
+
+    box.classList.remove("aberto");
+    if (el) el.classList.add("fechado");
+    localStorage.setItem("secao_" + id, "fechada");
+  } else {
+    box.classList.add("aberto");
+    box.style.opacity = "1";
+    box.style.maxHeight = box.scrollHeight + "px";
+
+    if (el) el.classList.remove("fechado");
+    localStorage.setItem("secao_" + id, "aberta");
+  }
+}
+
+function restaurarSecoes() {
+  const secoes = document.querySelectorAll(".conteudo-toggle");
+
+  secoes.forEach(box => {
+    const id = box.id;
+    if (!id) return;
+
+    const estado = localStorage.getItem("secao_" + id);
+    const titulo = document.querySelector(`[onclick*="${id}"]`);
+
+    if (estado === "aberta") {
+      box.classList.add("aberto");
+      box.style.opacity = "1";
+      box.style.maxHeight = box.scrollHeight + "px";
+      if (titulo) titulo.classList.remove("fechado");
+    } else {
+      box.classList.remove("aberto");
+      box.style.opacity = "0";
+      box.style.maxHeight = "0px";
+      if (titulo) titulo.classList.add("fechado");
+    }
+  });
 }
 
 function getIconeTipo(tipo) {
@@ -181,6 +234,140 @@ function salvarEdicaoItem(index) {
   renderInv();
   salvarTudo();
   fecharPopup();
+}
+
+/* ================= ARMADURAS ================= */
+
+function addArmadura() {
+  const nome = document.getElementById("armaduraNome").value.trim();
+  const ca = document.getElementById("armaduraCA").value.trim();
+  const desc = document.getElementById("armaduraDesc").value.trim();
+
+  if (!nome) return;
+
+  const novaArmadura = {
+    nome,
+    ca,
+    desc
+  };
+
+  if (editandoArmadura >= 0) {
+    armaduras[editandoArmadura] = novaArmadura;
+    editandoArmadura = -1;
+  } else {
+    armaduras.push(novaArmadura);
+  }
+
+  renderArmaduras();
+  salvarTudo();
+
+  document.getElementById("armaduraNome").value = "";
+  document.getElementById("armaduraCA").value = "";
+  document.getElementById("armaduraDesc").value = "";
+}
+
+function renderArmaduras() {
+  const ul = document.getElementById("listaArmaduras");
+  if (!ul) return;
+
+  ul.innerHTML = "";
+
+  armaduras.forEach((armadura, index) => {
+    const li = document.createElement("li");
+    li.className = "armadura-card";
+
+    li.innerHTML = `
+      <div class="armadura-info" onclick="verArmadura(${index})">
+        <strong class="armadura-nome">${armadura.nome || "Sem nome"}</strong>
+        <p class="armadura-ca-preview">CA: ${armadura.ca || "Sem CA"}</p>
+        <p class="armadura-desc-preview">
+          ${armadura.desc ? armadura.desc.substring(0, 60) + (armadura.desc.length > 60 ? "..." : "") : "Sem descrição"}
+        </p>
+      </div>
+
+      <div class="item-acoes">
+        <button type="button" class="btn-editar" onclick="event.stopPropagation(); editarArmadura(${index})">✏️</button>
+        <button type="button" class="arma-remover" onclick="event.stopPropagation(); removerArmadura(${index})">X</button>
+      </div>
+    `;
+
+    ul.appendChild(li);
+  });
+}
+
+function verArmadura(index) {
+  const armadura = armaduras[index];
+  if (!armadura) return;
+
+  const html = `
+    <div class="popup-bloco">
+      <div>
+        <span class="popup-label">CA</span>
+        <div class="popup-descricao">${armadura.ca || "Sem CA"}</div>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <span class="popup-label">Descrição</span>
+        <div class="popup-descricao">${armadura.desc || "Sem descrição"}</div>
+      </div>
+    </div>
+  `;
+
+  abrirPopup(armadura.nome || "Sem nome", html, true, () => editarArmadura(index));
+}
+
+function editarArmadura(index) {
+  const armadura = armaduras[index];
+  if (!armadura) return;
+
+  const html = `
+    <div class="popup-form">
+      <label class="popup-label">Nome</label>
+      <input id="editArmaduraNome" value="${armadura.nome || ""}">
+
+      <label class="popup-label">CA</label>
+      <input id="editArmaduraCA" value="${armadura.ca || ""}">
+
+      <label class="popup-label">Descrição</label>
+      <textarea id="editArmaduraDesc">${armadura.desc || ""}</textarea>
+
+      <button class="popup-salvar-btn" onclick="salvarEdicaoArmadura(${index})">
+        Salvar
+      </button>
+    </div>
+  `;
+
+  abrirPopup("Editar armadura", html, true, null);
+}
+
+function salvarEdicaoArmadura(index) {
+  const nome = document.getElementById("editArmaduraNome").value.trim();
+  const ca = document.getElementById("editArmaduraCA").value.trim();
+  const desc = document.getElementById("editArmaduraDesc").value.trim();
+
+  if (!nome) return;
+
+  armaduras[index] = {
+    nome,
+    ca,
+    desc
+  };
+
+  renderArmaduras();
+  salvarTudo();
+  fecharPopup();
+}
+
+function removerArmadura(index) {
+  const armadura = armaduras[index];
+  if (!armadura) return;
+
+  const confirmar = confirm(`Remover "${armadura.nome}"?`);
+  if (!confirmar) return;
+
+  armaduras.splice(index, 1);
+  renderArmaduras();
+  salvarTudo();
 }
 
 function editarArma(index) {
@@ -460,7 +647,20 @@ function renderPersonagens() {
         <span class="card-nome">${p.nome || "Sem nome"}</span>
         <span class="card-classe">${p.classe || "Sem classe"}</span>
       </div>
-      <button type="button" onclick="deletarPersonagem(${i}); event.stopPropagation()">X</button>
+
+      <div class="card-acoes">
+        <button
+          type="button"
+          class="btn-duplicar"
+          onclick="duplicarPersonagem(${i}); event.stopPropagation();"
+        >⧉</button>
+
+        <button
+          type="button"
+          class="btn-deletar"
+          onclick="deletarPersonagem(${i}); event.stopPropagation();"
+        >X</button>
+      </div>
     `;
 
     card.onclick = () => carregarPersonagem(i);
@@ -472,6 +672,18 @@ function renderPersonagens() {
   add.innerText = "+";
   add.onclick = criarPersonagem;
   div.appendChild(add);
+}
+
+function duplicarPersonagem(index) {
+  const original = personagens[index];
+  if (!original) return;
+
+  const copia = JSON.parse(JSON.stringify(original));
+  copia.nome = (original.nome || "Sem nome") + " (Cópia)";
+
+  personagens.push(copia);
+  salvarPersonagens();
+  renderPersonagens();
 }
 
 function criarPersonagem() {
@@ -487,6 +699,9 @@ function criarPersonagem() {
     resistencias: "",
     diario: "",
     proficienciasExtras: "",
+    armaduras: [],
+resistencias: "",
+dominio: [false, false, false, false, false, false],
 
     vidaMax: 50,
     vidaAtual: 50,
@@ -663,8 +878,12 @@ function carregarPersonagem(index) {
   document.getElementById("deslocamento").value = p.deslocamento ?? 9;
   document.getElementById("antecedentes").value = p.antecedentes || "";
   document.getElementById("idiomas").value = p.idiomas || "";
-  document.getElementById("resistencias").value = p.resistencias || "";
   document.getElementById("diario").value = p.diario || "";
+  const resistenciasEl = document.getElementById("resistencias");
+if (resistenciasEl) {
+  resistenciasEl.value = p.resistencias || "";
+}
+
 
   document.getElementById("forca").value = p.forca ?? 10;
   document.getElementById("destreza").value = p.destreza ?? 10;
@@ -703,6 +922,8 @@ function carregarPersonagem(index) {
   profs = p.profs || {};
   saves = p.saves || {};
   exaustao = p.exaustao ?? 0;
+  armaduras = p.armaduras || [];
+  dominio = p.dominio || [false, false, false, false, false, false];
   pontosEstilo = p.pontosEstilo ?? 0;
   dominio = p.dominio || [false, false, false, false, false, false];
   morte = p.morte || {
@@ -711,20 +932,22 @@ function carregarPersonagem(index) {
   };
 
   renderInv();
-  renderArmas();
-  renderPoderes();
-  atualizarTudo();
-  atualizarSaves();
-  atualizarBadgesSaves();
-  atualizarHP();
-  atualizarTemp();
-  setExaustao(exaustao);
-  atualizarMorte();
-  atualizarDT();
-  atualizarEstilo();
-  entrarFicha();
-  renderAliados();
-  renderDominio();
+renderArmas();
+renderPoderes();
+atualizarTudo();
+atualizarSaves();
+atualizarBadgesSaves();
+renderArmaduras();
+renderDominio();
+atualizarHP();
+atualizarTemp();
+setExaustao(exaustao);
+atualizarMorte();
+atualizarDT();
+atualizarEstilo();
+entrarFicha();
+renderAliados();
+restaurarSecoes();
 }
 
 /* ================= SALVAR ================= */
@@ -747,6 +970,9 @@ function salvarTudo() {
   p.imagem = imagemBase64;
   p.proficienciasExtras = document.getElementById("proficienciasExtras")?.value || "";
   p.aliados = personagens[personagemAtual].aliados || [];
+  p.resistencias = document.getElementById("resistencias")?.value || "";
+  p.armaduras = armaduras;
+  p.dominio = dominio;
 
   p.vidaMax = get("vidaMax");
   p.vidaAtual = vidaAtual;
@@ -1150,37 +1376,48 @@ function renderPoderes() {
   ul.innerHTML = "";
 
   poderes.forEach((poder, index) => {
+    const icone = getIconeTipo(poder.tipo);
+
     const li = document.createElement("li");
     li.className = "poder-card";
 
     li.innerHTML = `
       <div class="poder-info" onclick="verPoder(${index})">
-        <div class="poder-topo">
-          <span class="poder-icone">${getIconeTipo(poder.tipo)}</span>
-          <span class="poder-nome">${poder.nome || "Sem nome"}</span>
-          <span class="poder-tipo ${getClasseTipo(poder.tipo)}">${poder.tipo || "Padrão"}</span>
-        </div>
-
-        <div class="poder-meta">
-          <span class="poder-tag">${poder.dano || "Sem dano"}</span>
-          <span class="poder-tag">${poder.circulo || "Sem círculo"}</span>
-        </div>
-
-        <p class="poder-desc">
-          ${poder.desc ? poder.desc.substring(0, 80) + (poder.desc.length > 80 ? "..." : "") : "Sem descrição"}
+        <strong class="poder-nome">${icone} ${poder.nome || "Sem nome"}</strong>
+        ${poder.dano ? `<div class="poder-tags" style="margin-top:6px;"><span class="tag-dano">${poder.dano}</span></div>` : ""}
+        <p class="poder-preview">
+          ${
+            poder.desc
+              ? poder.desc.split("\n")[0].substring(0, 60) +
+                (poder.desc.split("\n")[0].length > 60 ? "." : "")
+              : "Sem descrição"
+          }
         </p>
       </div>
 
-      <div class="poder-acoes">
-        <button type="button" class="btn-ordem medieval" onclick="event.stopPropagation(); moverPoder(${index}, -1)">↑</button>
-        <button type="button" class="btn-ordem medieval" onclick="event.stopPropagation(); moverPoder(${index}, 1)">↓</button>
-        <button type="button" class="btn-editar medieval" onclick="event.stopPropagation(); editarPoder(${index})">🖊️</button>
+      <div class="item-acoes">
+        <div class="acoes-topo">
+          <button type="button" class="btn-mover" onclick="event.stopPropagation(); moverPoderCima(${index})">↑</button>
+          <button type="button" class="btn-mover" onclick="event.stopPropagation(); moverPoderBaixo(${index})">↓</button>
+          <button type="button" class="btn-editar" onclick="event.stopPropagation(); editarPoder(${index})">✏️</button>
+        </div>
+
         <button type="button" class="poder-remover" onclick="event.stopPropagation(); removerPoder(${index})">X</button>
       </div>
     `;
 
     ul.appendChild(li);
   });
+}
+
+
+
+function moverPoderCima(index) {
+  moverPoder(index, -1);
+}
+
+function moverPoderBaixo(index) {
+  moverPoder(index, 1);
 }
 
 function verPoder(index) {
@@ -1680,9 +1917,9 @@ let bloqueioDevilEstilo = false;
 
 const habilidadesPorRankEstilo = {
   D: {
-    nome: "Impulso Inicial",
-    efeito: "Ao atingir seu primeiro golpe, soma metade da proficiência no acerto."
-  },
+  nome: "Impulso Inicial",
+  efeito: () => `Ao atingir seu primeiro golpe, soma ${Math.floor(get("bonusProf") / 2)} no acerto.`
+},
   C: {
     nome: "Golpe Preciso",
     efeito: "Você soma sua proficiência no dano."
@@ -1736,6 +1973,7 @@ function calcularDanoEstilo() {
   const rank = getRankEstilo(pontosEstilo);
   const prof = get("bonusProf");
 
+  // dano recebe proficiência inteira só a partir do rank C
   if (["C", "B", "A", "S", "SS", "SSS"].includes(rank)) {
     dano += prof;
   }
@@ -1747,6 +1985,11 @@ function calcularDanoEstilo() {
 
   danoEl.textContent = dano;
   tipoEl.textContent = tipo;
+}
+
+function getMetadeProf() {
+  const prof = parseInt(document.getElementById("bonusProf")?.value) || 0;
+  return Math.floor(prof / 2);
 }
 
 function renderHabilidadesEstilo() {
@@ -1771,7 +2014,7 @@ function renderHabilidadesEstilo() {
         <h4>${habilidade.nome}</h4>
         <span class="rank-tag-estilo">${rank}</span>
       </div>
-      <p>${habilidade.efeito}</p>
+      <p>${typeof habilidade.efeito === "function" ? habilidade.efeito() : habilidade.efeito}</p>
       ${!ativo ? `<span class="lock-estilo">🔒 Desbloqueia no rank ${rank}</span>` : ""}
     `;
 
