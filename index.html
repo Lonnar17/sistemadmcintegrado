@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
- <meta name="theme-color" content="#1f1a17">
+  <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>devil trigger</title>
@@ -14,11 +14,14 @@
 <body>
 
   <div class="header-rpg">
-    <h1 class="titulo-rpg">
-      DUNGEONS <span class="and">&</span> DRAGONS
-    </h1>
-    <p class="subtitulo-rpg">LELECO</p>
+  <div class="logo-devil-trigger">
+    <img src="logo-devil.png" class="logo-centro">
   </div>
+
+  <!-- 👇 COLOCA EXATAMENTE AQUI -->
+  <span class="logo-sub">Devil Trigger</span>
+
+</div>
 
   <!-- ================= TELA INICIAL ================= -->
   <div id="tela-inicial" class="container">
@@ -36,141 +39,153 @@
       <button class="tab-btn" onclick="trocarAba('combate', this)">⚔️</button>
       <button class="tab-btn" onclick="trocarAba('inventario', this)">🎒</button>
       <button class="tab-btn" onclick="trocarAba('poderes', this)">🔥</button>
-      <button class="tab-btn" onclick="trocarAba('estilo', this)">🎭</button>
+      <button class="tab-btn tab-estilo" onclick="trocarAba('estilo', this)">
+  <img src="logo-devil.png" alt="Estilo" class="icone-aba-estilo">
+</button>
     </div>
 
     <!-- ================= PERSONAGEM ================= -->
     <div class="aba" id="personagem">
-  <button class="voltar" onclick="voltarInicio()">← Voltar</button>
+      <button class="voltar" onclick="voltarInicio()">← Voltar</button>
 
-  <div class="personagem-topo">
-    <div class="personagem-campos">
-      <input class="input-personagem" id="classe" placeholder="Classe">
-      <input id="nome" placeholder="Nome">
-      <input id="raca" placeholder="Raça">
-      <input id="idade" placeholder="Idade">
-      <input id="altura" placeholder="Altura">
-      <input id="antecedentes" placeholder="Antecedentes">
-    </div>
+      <div class="personagem-topo">
+        <div class="personagem-campos">
+          <input class="input-personagem" id="classe" placeholder="Classe">
+          <input id="nome" placeholder="Nome">
+          <input id="raca" placeholder="Raça">
+          <input id="idade" placeholder="Idade">
+          <input id="altura" placeholder="Altura">
+          <input id="antecedentes" placeholder="Antecedentes">
+        </div>
 
-    <div class="personagem-imagem-box">
-      <img id="preview" src="" alt="Preview do personagem">
+        <div class="personagem-imagem-box">
+          <img id="preview" src="" alt="Preview do personagem">
 
-      <div class="upload-imagem personagem-upload">
-        <label for="imagem" class="botao-upload">Escolher imagem</label>
-        <span id="nome-arquivo">Nenhum arquivo escolhido</span>
-        <input type="file" id="imagem" accept="image/*" onchange="previewImagem()">
-      </div>
-    </div>
-  </div>
-
-  <h2 class="titulo-secao">Idiomas</h2>
-  <textarea id="idiomas" placeholder="Idiomas"></textarea>
-
-  <h2 class="titulo-secao">Aliados</h2>
-
-  <div class="inv-add">
-    <input id="aliadoNome" placeholder="Nome do aliado">
-    <textarea id="aliadoDesc" placeholder="Descrição do aliado"></textarea>
-  </div>
-
-  <div class="add-linha">
-  <button class="inv-add-btn" onclick="adicionarAliado()">+</button>
-</div>
-
-  <ul id="listaAliados"></ul>
-</div>
-
-<!-- ================= ATRIBUTOS ================= -->
-<div class="aba" id="atributos" style="display:none;">
-
-  <div class="main">
-
-    <div class="atributos">
-
-      <div class="attr">
-        <span>FOR</span>
-        <div class="save-check" onclick="toggleSave('forca')"></div>
-        <input id="forca" value="10" oninput="atualizarTudo()">
-        <div id="mod_forca"></div>
-        <div class="save-badge" id="save_forca"></div>
+          <div class="upload-imagem personagem-upload">
+            <label for="imagem" class="botao-upload">Escolher imagem</label>
+            <span id="nome-arquivo">Nenhum arquivo escolhido</span>
+            <input type="file" id="imagem" accept="image/*" onchange="previewImagem()">
+          </div>
+        </div>
       </div>
 
-      <div class="attr">
-        <span>DES</span>
-        <div class="save-check" onclick="toggleSave('destreza')"></div>
-        <input id="destreza" value="10" oninput="atualizarTudo()">
-        <div id="mod_destreza"></div>
-        <div class="save-badge" id="save_destreza"></div>
+      <div class="secao-toggle">
+        <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxIdiomas', this)">
+          <span>Idiomas</span>
+          <span class="setinha">▼</span>
+        </h2>
+
+        <div id="boxIdiomas" class="conteudo-toggle">
+          <textarea id="idiomas" placeholder="Idiomas"></textarea>
+        </div>
       </div>
 
-      <div class="attr">
-        <span>CON</span>
-        <div class="save-check" onclick="toggleSave('constituicao')"></div>
-        <input id="constituicao" value="10" oninput="atualizarTudo()">
-        <div id="mod_constituicao"></div>
-        <div class="save-badge" id="save_constituicao"></div>
-      </div>
+      <div class="secao-toggle">
+        <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxAliadosForm', this)">
+          <span>Aliados</span>
+          <span class="setinha">▼</span>
+        </h2>
 
-      <div class="attr">
-        <span>INT</span>
-        <div class="save-check" onclick="toggleSave('inteligencia')"></div>
-        <input id="inteligencia" value="10" oninput="atualizarTudo()">
-        <div id="mod_inteligencia"></div>
-        <div class="save-badge" id="save_inteligencia"></div>
-      </div>
+        <div id="boxAliadosForm" class="conteudo-toggle">
+          <div class="inv-add">
+            <input id="aliadoNome" placeholder="Nome do aliado">
+            <textarea id="aliadoDesc" placeholder="Descrição do aliado"></textarea>
+          </div>
 
-      <div class="attr">
-        <span>SAB</span>
-        <div class="save-check" onclick="toggleSave('sabedoria')"></div>
-        <input id="sabedoria" value="10" oninput="atualizarTudo()">
-        <div id="mod_sabedoria"></div>
-        <div class="save-badge" id="save_sabedoria"></div>
-      </div>
-
-      <div class="attr">
-        <span>CAR</span>
-        <div class="save-check" onclick="toggleSave('carisma')"></div>
-        <input id="carisma" value="10" oninput="atualizarTudo()">
-        <div id="mod_carisma"></div>
-        <div class="save-badge" id="save_carisma"></div>
-      </div>
-
-    </div>
-
-    <div class="pericias">
-      <div class="header-pericias">
-        <div class="header-pericias-topo">
-          <span>Perícias</span>
-
-          <div class="inspiracao-box">
-            <label for="inspiracao">Inspiração</label>
-            <input id="inspiracao" type="text" value="0" oninput="salvarTudo()">
+          <div class="add-linha">
+            <button class="inv-add-btn" onclick="adicionarAliado()">+</button>
           </div>
         </div>
 
-        <div class="prof-box">
-          <label>Prof</label>
-          <input id="bonusProf" value="2" oninput="atualizarTudo()">
+        <ul id="listaAliados" class="lista-sempre-visivel"></ul>
+      </div>
+    </div>
+
+    <!-- ================= ATRIBUTOS ================= -->
+    <div class="aba" id="atributos" style="display:none;">
+      <div class="main">
+        <div class="atributos">
+
+          <div class="attr">
+            <span>FOR</span>
+            <div class="save-check" onclick="toggleSave('forca')"></div>
+            <input id="forca" value="10" oninput="atualizarTudo()">
+            <div id="mod_forca"></div>
+            <div class="save-badge" id="save_forca"></div>
+          </div>
+
+          <div class="attr">
+            <span>DES</span>
+            <div class="save-check" onclick="toggleSave('destreza')"></div>
+            <input id="destreza" value="10" oninput="atualizarTudo()">
+            <div id="mod_destreza"></div>
+            <div class="save-badge" id="save_destreza"></div>
+          </div>
+
+          <div class="attr">
+            <span>CON</span>
+            <div class="save-check" onclick="toggleSave('constituicao')"></div>
+            <input id="constituicao" value="10" oninput="atualizarTudo()">
+            <div id="mod_constituicao"></div>
+            <div class="save-badge" id="save_constituicao"></div>
+          </div>
+
+          <div class="attr">
+            <span>INT</span>
+            <div class="save-check" onclick="toggleSave('inteligencia')"></div>
+            <input id="inteligencia" value="10" oninput="atualizarTudo()">
+            <div id="mod_inteligencia"></div>
+            <div class="save-badge" id="save_inteligencia"></div>
+          </div>
+
+          <div class="attr">
+            <span>SAB</span>
+            <div class="save-check" onclick="toggleSave('sabedoria')"></div>
+            <input id="sabedoria" value="10" oninput="atualizarTudo()">
+            <div id="mod_sabedoria"></div>
+            <div class="save-badge" id="save_sabedoria"></div>
+          </div>
+
+          <div class="attr">
+            <span>CAR</span>
+            <div class="save-check" onclick="toggleSave('carisma')"></div>
+            <input id="carisma" value="10" oninput="atualizarTudo()">
+            <div id="mod_carisma"></div>
+            <div class="save-badge" id="save_carisma"></div>
+          </div>
+
+        </div>
+
+        <div class="pericias">
+          <div class="header-pericias">
+            <div class="header-pericias-topo">
+              <span>Perícias</span>
+
+              <div class="inspiracao-box">
+                <label for="inspiracao">Inspiração</label>
+                <input id="inspiracao" type="text" value="0" oninput="salvarTudo()">
+              </div>
+            </div>
+
+            <div class="prof-box">
+              <label>Prof</label>
+              <input id="bonusProf" value="2" oninput="atualizarTudo()">
+            </div>
+          </div>
+
+          <div id="pericias"></div>
         </div>
       </div>
 
-      <div id="pericias"></div>
+      <div class="proficiencias-secao">
+        <h2 class="titulo-secao">Proficiências</h2>
+        <textarea
+          id="proficienciasExtras"
+          oninput="salvarTudo()"
+          placeholder="Ex: armas marciais, armaduras leves, armaduras médias, escudos, ferramentas de ladrão, kit de herbalismo..."
+        ></textarea>
+      </div>
     </div>
-
-  </div>
-
-  <!-- 👇 AGORA SIM: FORA DO MAIN (EMBAIXO) -->
-  <div class="proficiencias-secao">
-    <h2 class="titulo-secao">Proficiências</h2>
-    <textarea
-      id="proficienciasExtras"
-      oninput="salvarTudo()"
-      placeholder="Ex: armas marciais, armaduras leves, armaduras médias, escudos, ferramentas de ladrão, kit de herbalismo..."
-    ></textarea>
-  </div>
-
-</div>
 
     <!-- ================= COMBATE ================= -->
     <div class="aba" id="combate" style="display:none;">
@@ -180,18 +195,18 @@
 
         <div class="linha-status">
           <div class="campo">
-            <label>HP MAX</label>
-            <input id="vidaMax" value="50" onchange="atualizarHP()">
+            <label>HP Máx</label>
+            <input id="vidaMax" value="50" oninput="atualizarHP(); salvarTudo()">
           </div>
 
           <div class="campo">
             <label>CA</label>
-            <input id="ca" value="10">
+            <input id="ca" placeholder="CA" oninput="salvarTudo()">
           </div>
 
           <div class="campo">
-            <label>DESLOC</label>
-            <input id="deslocamento" value="9">
+            <label>Desloc</label>
+            <input id="deslocamento" value="9" oninput="salvarTudo()">
           </div>
         </div>
 
@@ -200,7 +215,7 @@
 
           <div class="hp-overlay">
             <button onclick="alterarVida(-1)">-</button>
-            <span id="vida-texto">50</span>
+            <span id="vida-texto">50/50</span>
             <button onclick="alterarVida(1)">+</button>
           </div>
         </div>
@@ -222,129 +237,168 @@
         </div>
       </div>
 
-      <h2 class="titulo-secao">Armas</h2>
+      <div class="secao-toggle">
+        <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxArmasForm', this)">
+          <span>Armas</span>
+          <span class="setinha">▼</span>
+        </h2>
 
-      <div class="arma-add">
-  <input id="armaNome" placeholder="Nome da arma">
-  <input id="armaDano" placeholder="Dano (ex: 2d6)">
+        <div id="boxArmasForm" class="conteudo-toggle">
+          <div class="arma-add">
+            <input id="armaNome" placeholder="Nome da arma">
+            <input id="armaDano" placeholder="Dano (ex: 2d6)">
+            <textarea id="armaDesc" placeholder="Descrição da arma"></textarea>
 
-  <textarea id="armaDesc" placeholder="Descrição da arma"></textarea>
+            <div class="toggle-cargas">
+              <span class="toggle-cargas-texto">Usa cargas</span>
+              <label class="switch-cargas">
+                <input type="checkbox" id="armaTemCargas" onchange="toggleCampoCargas()">
+                <span class="slider-cargas"></span>
+              </label>
+            </div>
 
-  <div class="arma-cargas-config">
-    <div class="toggle-cargas">
-  <span>Usa cargas</span>
+            <input id="armaMaxCargas" type="number" placeholder="Qtd. de cargas" style="display:none;">
 
-  <label class="switch">
-    <input type="checkbox" id="armaTemCargas" onchange="toggleCampoCargas()">
-    <span class="slider"></span>
-  </label>
-</div>
-
-    <input
-      id="armaMaxCargas"
-      type="number"
-      min="1"
-      max="20"
-      placeholder="Qtd. de cargas"
-      style="display:none;"
-    >
-  </div>
-
-  <button class="inv-add-btn" onclick="addArma()">+</button>
-</div>
-
-      <ul id="listaArmas"></ul>
-
-      <div class="dominio-box">
-  <h2 class="titulo-secao">Pontos de Domínio</h2>
-
-  <div class="dominio-checks">
-    <div class="dominio-check" onclick="toggleDominio(0)"></div>
-    <div class="dominio-check" onclick="toggleDominio(1)"></div>
-    <div class="dominio-check" onclick="toggleDominio(2)"></div>
-    <div class="dominio-check" onclick="toggleDominio(3)"></div>
-    <div class="dominio-check" onclick="toggleDominio(4)"></div>
-    <div class="dominio-check" onclick="toggleDominio(5)"></div>
-  </div>
-</div>
-
-      <div class="exaustao-box">
-        <h2 class="titulo-secao">Exaustão</h2>
-
-        <div class="exaustao-inline">
-          <div class="exaustao-checks" ondblclick="mostrarExaustao()">
-            <span class="exaustao-check" onclick="setExaustao(0)">0</span>
-            <span class="exaustao-check" onclick="setExaustao(1)">1</span>
-            <span class="exaustao-check" onclick="setExaustao(2)">2</span>
-            <span class="exaustao-check" onclick="setExaustao(3)">3</span>
-            <span class="exaustao-check" onclick="setExaustao(4)">4</span>
-            <span class="exaustao-check" onclick="setExaustao(5)">5</span>
-            <span class="exaustao-check" onclick="setExaustao(6)">6</span>
+            <div class="arma-acoes-final">
+              <button class="inv-add-btn" onclick="addArma()">+</button>
+            </div>
           </div>
         </div>
 
-        <p id="exaustao-desc">Sem exaustão</p>
+        <ul id="listaArmas" class="lista-sempre-visivel"></ul>
       </div>
 
-      <div class="morte-box">
-  <h2 class="titulo-secao">Pontos de Morte</h2>
+      <div class="secao-toggle">
+        <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxArmadurasForm', this)">
+          <span>Armaduras</span>
+          <span class="setinha">▼</span>
+        </h2>
 
-  <div class="morte-linha">
-    <span>Sucessos</span>
-    <div class="morte-checks">
-      <div class="morte-check" onclick="toggleMorte('sucessos', 0)"></div>
-      <div class="morte-check" onclick="toggleMorte('sucessos', 1)"></div>
-      <div class="morte-check" onclick="toggleMorte('sucessos', 2)"></div>
-    </div>
-  </div>
+        <div id="boxArmadurasForm" class="conteudo-toggle">
+          <div class="armadura-add">
+            <input id="armaduraNome" placeholder="Nome da armadura">
+            <input id="armaduraCA" placeholder="CA (ex: 16)">
+            <textarea id="armaduraDesc" placeholder="Descrição da armadura"></textarea>
 
-  <div class="morte-linha">
-    <span>Falhas</span>
-    <div class="morte-checks">
-      <div class="morte-check falha" onclick="toggleMorte('falhas', 0)"></div>
-      <div class="morte-check falha" onclick="toggleMorte('falhas', 1)"></div>
-      <div class="morte-check falha" onclick="toggleMorte('falhas', 2)"></div>
-    </div>
-  </div>
-</div>
+            <div class="add-linha">
+              <button class="inv-add-btn" onclick="addArmadura()">+</button>
+            </div>
+          </div>
+        </div>
 
-<div class="resistencias-box">
-  <h2 class="titulo-secao">Resistências</h2>
-  <textarea
-    id="resistencias"
-    oninput="salvarTudo()"
-    placeholder="Ex: resistência a fogo, veneno, dano mágico, ou qualquer observação que quiser..."
-  ></textarea>
-</div>
+        <ul id="listaArmaduras" class="lista-sempre-visivel"></ul>
+      </div>
+
+      <div class="secao-toggle">
+        <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxDominio', this)">
+          <span>Pontos de Domínio</span>
+          <span class="setinha">▼</span>
+        </h2>
+
+        <div id="boxDominio" class="conteudo-toggle">
+          <div class="dominio-box">
+            <div class="dominio-checks">
+              <div class="dominio-check" onclick="toggleDominio(0)"></div>
+              <div class="dominio-check" onclick="toggleDominio(1)"></div>
+              <div class="dominio-check" onclick="toggleDominio(2)"></div>
+              <div class="dominio-check" onclick="toggleDominio(3)"></div>
+              <div class="dominio-check" onclick="toggleDominio(4)"></div>
+              <div class="dominio-check" onclick="toggleDominio(5)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="secao-toggle">
+        <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxExaustao', this)">
+          <span>Exaustão</span>
+          <span class="setinha">▼</span>
+        </h2>
+
+        <div id="boxExaustao" class="conteudo-toggle">
+          <div class="exaustao-box">
+            <div class="exaustao-inline">
+              <div class="exaustao-checks">
+                <div class="exaustao-check" onclick="setExaustao(0)">0</div>
+                <div class="exaustao-check" onclick="setExaustao(1)">1</div>
+                <div class="exaustao-check" onclick="setExaustao(2)">2</div>
+                <div class="exaustao-check" onclick="setExaustao(3)">3</div>
+                <div class="exaustao-check" onclick="setExaustao(4)">4</div>
+                <div class="exaustao-check" onclick="setExaustao(5)">5</div>
+                <div class="exaustao-check" onclick="setExaustao(6)">6</div>
+              </div>
+            </div>
+
+            <p id="exaustao-desc"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="secao-toggle">
+        <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxMorte', this)">
+          <span>Testes de Morte</span>
+          <span class="setinha">▼</span>
+        </h2>
+
+        <div id="boxMorte" class="conteudo-toggle">
+          <div class="morte-box">
+            <div class="morte-linha">
+              <span>Sucessos</span>
+              <div class="morte-checks">
+                <div class="morte-check" onclick="toggleMorte('sucessos', 0)"></div>
+                <div class="morte-check" onclick="toggleMorte('sucessos', 1)"></div>
+                <div class="morte-check" onclick="toggleMorte('sucessos', 2)"></div>
+              </div>
+            </div>
+
+            <div class="morte-linha">
+              <span>Falhas</span>
+              <div class="morte-checks">
+                <div class="morte-check falha" onclick="toggleMorte('falhas', 0)"></div>
+                <div class="morte-check falha" onclick="toggleMorte('falhas', 1)"></div>
+                <div class="morte-check falha" onclick="toggleMorte('falhas', 2)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
 
     <!-- ================= INVENTÁRIO ================= -->
-   <div class="aba" id="inventario" style="display:none;">
-    <h2 class="titulo-secao">Inventário</h2>
+    <div class="aba" id="inventario" style="display:none;">
+      <h2 class="titulo-secao">Inventário</h2>
 
-    <button class="btn-diario" onclick="toggleDiario()">📖 Diário</button>
+      <button class="btn-diario" onclick="toggleDiario()">📖 Diário</button>
 
-    <div id="diario-box" class="diario-box" style="display:none;">
-      <textarea id="diario" oninput="salvarTudo()" placeholder="Escreva aqui seu diário, anotações, pistas, missões, nomes, eventos..."></textarea>
+      <div id="diario-box" class="diario-box" style="display:none;">
+        <textarea id="diario" oninput="salvarTudo()" placeholder="Escreva aqui seu diário, anotações, pistas, missões, nomes, eventos..."></textarea>
+      </div>
+
+      <div class="secao-toggle">
+        <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxItensForm', this)">
+  <span>Itens</span>
+  <span class="setinha">▼</span>
+</h2>
+
+        <div id="boxItensForm" class="conteudo-toggle">
+          <div class="inv-add">
+            <input id="item" placeholder="Nome do item">
+            <textarea id="itemDesc" placeholder="Descrição"></textarea>
+          </div>
+
+          <div class="add-linha">
+            <button class="inv-add-btn" onclick="addItem()">+</button>
+          </div>
+        </div>
+
+        <ul id="lista" class="lista-sempre-visivel"></ul>
+      </div>
     </div>
-
-    <h3 class="subtitulo-inventario">Itens</h3>
-
-    <div class="inv-add">
-      <input id="item" placeholder="Nome do item">
-      <textarea id="itemDesc" placeholder="Descrição"></textarea>
-      <button class="inv-add-btn" onclick="addItem()">+</button>
-    </div>
-
-    <ul id="lista"></ul>
-  </div>
-
 
     <!-- ================= PODERES ================= -->
     <div class="aba" id="poderes" style="display:none;">
-
-      <h2 class="titulo-secao">Poderes</h2>
+      <h2 class="titulo-secao">Poderes e Magias</h2>
 
       <div class="dt-box">
         <h3 class="subtitulo-secao">DT</h3>
@@ -372,78 +426,91 @@
         </div>
       </div>
 
-      <div class="poder-add">
-        <input id="poderNome" placeholder="Nome do poder">
-        <input id="poderTipo" placeholder="Tipo de dano (ex: fogo, gelo, raio, necrótico)">
-        <input id="poderDano" placeholder="Dano (ex: 2d6, 1d8+3)">
-        <div class="poder-linha">
-          <input id="poderCirculo" placeholder="Círculo">
-          <input id="poderTempo" placeholder="Conjuração">
+      <div class="secao-toggle">
+        <h2 class="titulo-secao titulo-toggle" onclick="toggleSecao('boxPoderForm', this)">
+          <span>Adicionar Poder</span>
+          <span class="setinha">▼</span>
+        </h2>
+
+        <div id="boxPoderForm" class="conteudo-toggle">
+          <div class="poder-add">
+            <input id="poderNome" placeholder="Nome do poder">
+            <input id="poderTipo" placeholder="Tipo de dano (ex: fogo, gelo, raio, necrótico)">
+            <input id="poderDano" placeholder="Dano (ex: 2d6, 1d8+3)">
+
+            <div class="poder-linha">
+              <input id="poderCirculo" placeholder="Círculo">
+              <input id="poderTempo" placeholder="Conjuração">
+            </div>
+
+            <div class="poder-linha">
+              <input id="poderAlcance" placeholder="Alcance">
+              <input id="poderDuracao" placeholder="Duração">
+            </div>
+
+            <textarea id="poderDesc" placeholder="Descrição do poder"></textarea>
+          </div>
+
+          <div class="add-linha">
+            <button class="inv-add-btn" onclick="addPoder()">+</button>
+          </div>
         </div>
 
-        <div class="poder-linha">
-          <input id="poderAlcance" placeholder="Alcance">
-          <input id="poderDuracao" placeholder="Duração">
+        <ul id="listaPoderes" class="lista-sempre-visivel"></ul>
+      </div>
+    </div>
+
+    <!-- ================= ESTILO ================= -->
+    <div class="aba" id="estilo" style="display:none;">
+      <div class="estilo-conteudo">
+        <h2 class="titulo-secao">Estilo</h2>
+
+        <div class="barra-estilo">
+          <div id="progressoEstilo"></div>
         </div>
 
-        <textarea id="poderDesc" placeholder="Descrição do poder"></textarea>
-        <button class="inv-add-btn" onclick="addPoder()">+</button>
+        <p class="estilo-pontos-texto">
+          Pontos: <span id="pontosEstilo">0</span>/10
+        </p>
+
+        <div class="habilidades-estilo-box">
+          <h3 class="subtitulo-secao">Habilidades por Rank</h3>
+          <div id="habilidadesEstilo" class="habilidades-estilo"></div>
+        </div>
       </div>
-
-      <ul id="listaPoderes"></ul>
-      </div>
-
-
-<!-- ================= ESTILO ================= -->
-<!-- ================= ESTILO ================= -->
-<div class="aba" id="estilo" style="display:none;">
-  <div class="estilo-conteudo">
-    <h2 class="titulo-secao">Estilo</h2>
-
-    <div class="barra-estilo">
-      <div id="progressoEstilo"></div>
     </div>
 
-    <p class="estilo-pontos-texto">
-      Pontos: <span id="pontosEstilo">0</span>/10
-    </p>
+  </div>
 
-    <div class="habilidades-estilo-box">
-      <h3 class="subtitulo-secao">Habilidades por Rank</h3>
-      <div id="habilidadesEstilo" class="habilidades-estilo"></div>
+  <!-- HUD FLUTUANTE DO ESTILO -->
+  <div class="estilo-topo-fixo" style="display:none;">
+    <div class="box-estilo">
+      <span>Dano: <span id="danoTotal">5</span></span>
+      <span>Tipo: <span id="tipoDano">Físico</span></span>
+      <span>Rank: <span id="rankEstilo">-</span></span>
     </div>
   </div>
-</div>
 
-<!-- HUD FLUTUANTE DO ESTILO -->
-<div class="estilo-topo-fixo" style="display:none;">
-  <div class="box-estilo">
-    <span>Dano: <span id="danoTotal">5</span></span>
-    <span>Tipo: <span id="tipoDano">Físico</span></span>
-    <span>Rank: <span id="rankEstilo">-</span></span>
+  <div class="botoes-estilo-fixos" style="display:none;">
+    <button class="btn-estilo erro" onclick="erroEstilo()">✕</button>
+    <button class="btn-estilo acerto" onclick="acertoEstilo()">✓</button>
+    <button class="btn-estilo devil" onclick="devilEstilo()">⚡</button>
   </div>
-</div>
 
-<div class="botoes-estilo-fixos" style="display:none;">
-  <button class="btn-estilo erro" onclick="erroEstilo()">✕</button>
-  <button class="btn-estilo acerto" onclick="acertoEstilo()">✓</button>
-  <button class="btn-estilo devil" onclick="devilEstilo()">⚡</button>
-</div>
- 
   <div id="popup" class="popup" style="display:none;">
-  <div class="popup-content">
-    <div class="popup-acoes">
-      <span class="fechar" onclick="fecharPopup()">X</span>
-    </div>
+    <div class="popup-content">
+      <div class="popup-acoes">
+        <span class="fechar" onclick="fecharPopup()">X</span>
+      </div>
 
-    <h3 id="popup-titulo"></h3>
-    <div id="popup-texto"></div>
+      <h3 id="popup-titulo"></h3>
+      <div id="popup-texto"></div>
+    </div>
   </div>
-</div>
 
   <script src="script.js"></script>
 
-    <script>
+  <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js")
         .then(() => console.log("SW registrado"))
