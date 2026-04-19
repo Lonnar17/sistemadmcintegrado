@@ -211,6 +211,9 @@ function editarItem(index) {
       <label class="popup-label">Descrição</label>
       <textarea id="editItemDesc">${item.desc || ""}</textarea>
 
+      <label class="popup-label">Quantidade</label>
+      <input id="editItemQtd" type="number" min="1" value="${item.qtd || 1}">
+
       <button class="popup-salvar-btn" onclick="salvarEdicaoItem(${index})">
         Salvar
       </button>
@@ -221,14 +224,16 @@ function editarItem(index) {
 }
 
 function salvarEdicaoItem(index) {
-  const nome = document.getElementById("editItemNome").value.trim();
-  const desc = document.getElementById("editItemDesc").value.trim();
+  const nome = document.getElementById("editItemNome")?.value.trim();
+  const desc = document.getElementById("editItemDesc")?.value.trim();
+  const qtd = parseInt(document.getElementById("editItemQtd")?.value) || 1;
 
   if (!nome) return;
 
   inventario[index] = {
     nome,
-    desc
+    desc,
+    qtd
   };
 
   renderInv();
@@ -238,20 +243,55 @@ function salvarEdicaoItem(index) {
 
 /* ================= ARMADURAS ================= */
 
+function toggleCampoCargasArmadura() {
+  const check = document.getElementById("armaduraTemCargas");
+  const input = document.getElementById("armaduraMaxCargas");
+
+  if (!check || !input) return;
+
+  if (check.checked) {
+    input.style.display = "block";
+  } else {
+    input.style.display = "none";
+    input.value = "";
+  }
+}
+
 function addArmadura() {
   const nome = document.getElementById("armaduraNome").value.trim();
   const ca = document.getElementById("armaduraCA").value.trim();
   const desc = document.getElementById("armaduraDesc").value.trim();
 
+  const temCargasEl = document.getElementById("armaduraTemCargas");
+  const maxCargasEl = document.getElementById("armaduraMaxCargas");
+
+  const temCargas = !!temCargasEl?.checked;
+  const maxCargas = temCargas ? (parseInt(maxCargasEl?.value) || 0) : 0;
+
   if (!nome) return;
+  if (temCargas && maxCargas <= 0) return;
 
   const novaArmadura = {
     nome,
     ca,
-    desc
+    desc,
+    temCargas,
+    maxCargas,
+    cargasGastas: temCargas ? Array(maxCargas).fill(false) : []
   };
 
   if (editandoArmadura >= 0) {
+    const armaduraAnterior = armaduras[editandoArmadura];
+
+    if (
+      armaduraAnterior?.temCargas &&
+      temCargas &&
+      armaduraAnterior.maxCargas === maxCargas &&
+      Array.isArray(armaduraAnterior.cargasGastas)
+    ) {
+      novaArmadura.cargasGastas = armaduraAnterior.cargasGastas;
+    }
+
     armaduras[editandoArmadura] = novaArmadura;
     editandoArmadura = -1;
   } else {
@@ -264,6 +304,21 @@ function addArmadura() {
   document.getElementById("armaduraNome").value = "";
   document.getElementById("armaduraCA").value = "";
   document.getElementById("armaduraDesc").value = "";
+
+  if (temCargasEl) temCargasEl.checked = false;
+  if (maxCargasEl) {
+    maxCargasEl.value = "";
+    maxCargasEl.style.display = "none";
+  }
+}
+
+function toggleCargaArmadura(indexArmadura, indexCarga) {
+  const armadura = armaduras[indexArmadura];
+  if (!armadura || !armadura.temCargas || !Array.isArray(armadura.cargasGastas)) return;
+
+  armadura.cargasGastas[indexCarga] = !armadura.cargasGastas[indexCarga];
+  renderArmaduras();
+  salvarTudo();
 }
 
 function renderArmaduras() {
@@ -276,13 +331,30 @@ function renderArmaduras() {
     const li = document.createElement("li");
     li.className = "armadura-card";
 
+    const cargasHTML = armadura.temCargas && armadura.maxCargas > 0
+      ? `
+        <div class="arma-cargas-box">
+          <span class="arma-cargas-label">Cargas</span>
+          <div class="arma-cargas-checks">
+            ${Array.from({ length: armadura.maxCargas }, (_, i) => `
+              <div
+                class="arma-carga-check ${armadura.cargasGastas?.[i] ? "ativo" : ""}"
+                onclick="event.stopPropagation(); toggleCargaArmadura(${index}, ${i})"
+              ></div>
+            `).join("")}
+          </div>
+        </div>
+      `
+      : "";
+
     li.innerHTML = `
       <div class="armadura-info" onclick="verArmadura(${index})">
         <strong class="armadura-nome">${armadura.nome || "Sem nome"}</strong>
         <p class="armadura-ca-preview">CA: ${armadura.ca || "Sem CA"}</p>
         <p class="armadura-desc-preview">
-          ${armadura.desc ? armadura.desc.substring(0, 60) + (armadura.desc.length > 60 ? "..." : "") : "Sem descrição"}
+          ${armadura.desc ? armadura.desc.substring(0, 60) + (armadura.desc.length > 60 ? "." : "") : "Sem descrição"}
         </p>
+        ${cargasHTML}
       </div>
 
       <div class="item-acoes">
@@ -331,6 +403,30 @@ function editarArmadura(index) {
       <label class="popup-label">Descrição</label>
       <textarea id="editArmaduraDesc">${armadura.desc || ""}</textarea>
 
+      <div class="toggle-cargas" style="margin-top:10px;">
+        <span class="toggle-cargas-texto">Usa cargas</span>
+
+        <label class="switch-cargas">
+          <input
+            type="checkbox"
+            id="editArmaduraTemCargas"
+            ${armadura.temCargas ? "checked" : ""}
+            onchange="toggleEditCampoCargasArmadura()"
+          >
+          <span class="slider-cargas"></span>
+        </label>
+      </div>
+
+      <input
+        id="editArmaduraMaxCargas"
+        type="number"
+        min="1"
+        max="20"
+        placeholder="Qtd. de cargas"
+        value="${armadura.maxCargas || ""}"
+        style="display:${armadura.temCargas ? "block" : "none"};"
+      >
+
       <button class="popup-salvar-btn" onclick="salvarEdicaoArmadura(${index})">
         Salvar
       </button>
@@ -340,17 +436,53 @@ function editarArmadura(index) {
   abrirPopup("Editar armadura", html, true, null);
 }
 
+function toggleEditCampoCargasArmadura() {
+  const check = document.getElementById("editArmaduraTemCargas");
+  const input = document.getElementById("editArmaduraMaxCargas");
+
+  if (!check || !input) return;
+
+  if (check.checked) {
+    input.style.display = "block";
+  } else {
+    input.style.display = "none";
+    input.value = "";
+  }
+}
+
 function salvarEdicaoArmadura(index) {
   const nome = document.getElementById("editArmaduraNome").value.trim();
   const ca = document.getElementById("editArmaduraCA").value.trim();
   const desc = document.getElementById("editArmaduraDesc").value.trim();
 
+  const temCargas = !!document.getElementById("editArmaduraTemCargas")?.checked;
+  const maxCargas = temCargas ? (parseInt(document.getElementById("editArmaduraMaxCargas")?.value) || 0) : 0;
+
   if (!nome) return;
+  if (temCargas && maxCargas <= 0) return;
+
+  const armaduraAnterior = armaduras[index];
+
+  let cargasGastas = [];
+  if (temCargas) {
+    if (
+      armaduraAnterior?.temCargas &&
+      armaduraAnterior.maxCargas === maxCargas &&
+      Array.isArray(armaduraAnterior.cargasGastas)
+    ) {
+      cargasGastas = armaduraAnterior.cargasGastas;
+    } else {
+      cargasGastas = Array(maxCargas).fill(false);
+    }
+  }
 
   armaduras[index] = {
     nome,
     ca,
-    desc
+    desc,
+    temCargas,
+    maxCargas,
+    cargasGastas
   };
 
   renderArmaduras();
@@ -433,7 +565,26 @@ function editarPoder(index) {
       <input id="editPoderNome" value="${poder.nome || ""}">
 
       <label class="popup-label">Tipo</label>
-      <input id="editPoderTipo" value="${poder.tipo || ""}">
+      <select id="editPoderTipo" class="input-personagem">
+        <option value="">Tipo de dano</option>
+        <option value="fogo" ${poder.tipo === "fogo" ? "selected" : ""}>🔥 Fogo</option>
+        <option value="gelo" ${poder.tipo === "gelo" ? "selected" : ""}>❄️ Gelo</option>
+        <option value="raio" ${poder.tipo === "raio" ? "selected" : ""}>⚡ Raio</option>
+        <option value="trovejante" ${poder.tipo === "trovejante" ? "selected" : ""}>🌩️ Trovejante</option>
+        <option value="necrotico" ${poder.tipo === "necrotico" ? "selected" : ""}>💀 Necrótico</option>
+        <option value="radiante" ${poder.tipo === "radiante" ? "selected" : ""}>✨ Radiante</option>
+        <option value="veneno" ${poder.tipo === "veneno" ? "selected" : ""}>☠️ Veneno</option>
+        <option value="agua" ${poder.tipo === "agua" ? "selected" : ""}>💧 Água</option>
+        <option value="psiquico" ${poder.tipo === "psiquico" ? "selected" : ""}>🧠 Psíquico</option>
+        <option value="corte" ${poder.tipo === "corte" ? "selected" : ""}>🔪 Corte</option>
+        <option value="perfurante" ${poder.tipo === "perfurante" ? "selected" : ""}>📌 Perfurante</option>
+        <option value="concussao" ${poder.tipo === "concussao" ? "selected" : ""}>💥 Concussão</option>
+        <option value="metal" ${poder.tipo === "metal" ? "selected" : ""}>⚙️ Metal</option>
+        <option value="fisico" ${poder.tipo === "fisico" ? "selected" : ""}>🗡️ Físico</option>
+        <option value="vento" ${poder.tipo === "vento" ? "selected" : ""}>🍃 Vento</option>
+        <option value="madeira" ${poder.tipo === "madeira" ? "selected" : ""}>🌳 Madeira</option>
+        <option value="terra" ${poder.tipo === "terra" ? "selected" : ""}>🌍 Terra</option>
+      </select>
 
       <label class="popup-label">Dano</label>
       <input id="editPoderDano" value="${poder.dano || ""}">
@@ -1067,14 +1218,16 @@ function renderDominio() {
 /* ================= INVENTÁRIO ================= */
 
 function addItem() {
-  const nome = document.getElementById("item").value.trim();
-  const desc = document.getElementById("itemDesc").value.trim();
+  const nome = document.getElementById("itemNome")?.value.trim();
+  const desc = document.getElementById("itemDesc")?.value.trim();
+  const qtd = parseInt(document.getElementById("itemQtd")?.value) || 1;
 
   if (!nome) return;
 
   const novoItem = {
     nome,
-    desc
+    desc,
+    qtd
   };
 
   if (editandoItem >= 0) {
@@ -1087,8 +1240,9 @@ function addItem() {
   renderInv();
   salvarTudo();
 
-  document.getElementById("item").value = "";
+  document.getElementById("itemNome").value = "";
   document.getElementById("itemDesc").value = "";
+  document.getElementById("itemQtd").value = "";
 }
 
 function renderInv() {
@@ -1102,18 +1256,22 @@ function renderInv() {
     li.className = "item-card";
 
     li.innerHTML = `
-      <div class="item-info" onclick="verItem(${index})">
-        <strong class="item-nome">${item.nome || "Sem nome"}</strong>
-        <p class="item-preview">
-          ${item.desc ? item.desc.substring(0, 60) + (item.desc.length > 60 ? "..." : "") : "Sem descrição"}
-        </p>
-      </div>
+  <div class="item-info" onclick="verItem(${index})" style="position: relative;">
+    <strong class="item-nome">
+  ${item.nome || "Sem nome"}
+</strong>
 
-      <div class="item-acoes">
-        <button type="button" class="btn-editar" onclick="editarItem(${index})">✏️</button>
-        <button type="button" class="item-remover" onclick="removerItem(${index})">X</button>
-      </div>
-    `;
+${item.qtd > 1 ? `<span class="item-qtd">${item.qtd}</span>` : ""}
+    <p class="item-preview">
+      ${item.desc ? item.desc.substring(0, 60) + (item.desc.length > 60 ? "..." : "") : "Sem descrição"}
+    </p>
+  </div>
+
+  <div class="item-acoes">
+    <button type="button" class="btn-editar" onclick="event.stopPropagation(); editarItem(${index})">🖊️</button>
+    <button type="button" class="item-remover" onclick="event.stopPropagation(); removerItem(${index})">X</button>
+  </div>
+`;
 
     ul.appendChild(li);
   });
@@ -1126,10 +1284,13 @@ function verItem(index) {
   const html = `
     <div class="popup-bloco">
       <div>
+        <span class="popup-label">Quantidade</span>
+        <div class="popup-descricao">${item.qtd || 1}</div>
+      </div>
+
+      <div style="margin-top: 12px;">
         <span class="popup-label">Descrição</span>
-        <div class="popup-descricao">
-          ${item.desc || "Sem descrição"}
-        </div>
+        <div class="popup-descricao">${item.desc || "Sem descrição"}</div>
       </div>
     </div>
   `;
