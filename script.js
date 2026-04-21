@@ -16,6 +16,8 @@ let poderes = [];
 let profs = {};
 let saves = {};
 let imagemBase64 = "";
+let imagemPosX = 50;
+let imagemPosY = 50;
 let exaustao = 0;
 let armaduras = [];
 let editandoArmadura = -1;
@@ -69,7 +71,20 @@ function get(id) {
 }
 
 function salvarPersonagens() {
-  localStorage.setItem("personagens", JSON.stringify(personagens));
+  try {
+    localStorage.setItem("personagens", JSON.stringify(personagens));
+  } catch (erro) {
+    if (erro && erro.name === "QuotaExceededError") {
+      alert("O armazenamento do navegador lotou. Você precisa apagar algumas fichas antigas ou usar imagens menores.");
+      console.error("LocalStorage cheio:", erro);
+      return false;
+    }
+
+    console.error("Erro ao salvar personagens:", erro);
+    return false;
+  }
+
+  return true;
 }
 
 function normalizarTipo(tipo) {
@@ -214,6 +229,33 @@ function editarItem(index) {
       <label class="popup-label">Quantidade</label>
       <input id="editItemQtd" type="number" min="1" value="${item.qtd || 1}">
 
+      <div class="toggle-cargas" style="margin-top:10px;">
+        <span class="toggle-cargas-texto">Requer sintonia</span>
+        <label class="switch-cargas">
+          <input
+            type="checkbox"
+            id="editItemRequerSintonia"
+            ${item.requerSintonia ? "checked" : ""}
+            onchange="toggleEditSintoniaItem()"
+          >
+          <span class="slider-cargas"></span>
+        </label>
+      </div>
+
+      <div id="boxEditItemSintonizado" style="display:${item.requerSintonia ? "block" : "none"};">
+        <div class="toggle-cargas" style="margin-top:10px;">
+          <span class="toggle-cargas-texto">Está sintonizado</span>
+          <label class="switch-cargas">
+            <input
+              type="checkbox"
+              id="editItemSintonizado"
+              ${item.sintonizado ? "checked" : ""}
+            >
+            <span class="slider-cargas"></span>
+          </label>
+        </div>
+      </div>
+
       <button class="popup-salvar-btn" onclick="salvarEdicaoItem(${index})">
         Salvar
       </button>
@@ -223,17 +265,36 @@ function editarItem(index) {
   abrirPopup("Editar item", html, true, null);
 }
 
+function toggleEditSintoniaItem() {
+  const requer = document.getElementById("editItemRequerSintonia");
+  const box = document.getElementById("boxEditItemSintonizado");
+  const sintonizado = document.getElementById("editItemSintonizado");
+
+  if (!requer || !box) return;
+
+  if (requer.checked) {
+    box.style.display = "block";
+  } else {
+    box.style.display = "none";
+    if (sintonizado) sintonizado.checked = false;
+  }
+}
+
 function salvarEdicaoItem(index) {
   const nome = document.getElementById("editItemNome")?.value.trim();
   const desc = document.getElementById("editItemDesc")?.value.trim();
   const qtd = parseInt(document.getElementById("editItemQtd")?.value) || 1;
+  const requerSintonia = !!document.getElementById("editItemRequerSintonia")?.checked;
+  const sintonizado = requerSintonia && !!document.getElementById("editItemSintonizado")?.checked;
 
   if (!nome) return;
 
   inventario[index] = {
     nome,
     desc,
-    qtd
+    qtd,
+    requerSintonia,
+    sintonizado
   };
 
   renderInv();
@@ -789,9 +850,14 @@ function renderPersonagens() {
   div.innerHTML = "";
 
   personagens.forEach((p, i) => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.style.backgroundImage = `url('${p.imagem || ""}')`;
+  const card = document.createElement("div");
+  card.className = "card";
+  card.style.backgroundImage = `url('${p.imagem || ""}')`;
+
+  const posX = p.imagemPosX ?? 50;
+  const posY = p.imagemPosY ?? 50;
+  card.style.backgroundPosition = `${posX}% ${posY}%`;
+  card.style.backgroundSize = "cover";
 
     card.innerHTML = `
       <div class="card-info">
@@ -845,14 +911,16 @@ function criarPersonagem() {
     idade: "",
     altura: "",
     imagem: "",
+    imagemPosX: 50,
+    imagemPosY: 50,
     antecedentes: "",
     idiomas: "",
     resistencias: "",
     diario: "",
     proficienciasExtras: "",
     armaduras: [],
-resistencias: "",
-dominio: [false, false, false, false, false, false],
+    resistencias: "",
+    dominio: [false, false, false, false, false, false],
 
     vidaMax: 50,
     vidaAtual: 50,
@@ -1016,9 +1084,10 @@ function deletarPersonagem(index) {
 
 function carregarPersonagem(index) {
   personagemAtual = index;
-  const p = personagens[index];
+  const p = personagens[personagemAtual];
   if (!p) return;
 
+  document.getElementById("preview").src = p.imagem || "";
   document.getElementById("classe").value = p.classe || "";
   document.getElementById("nome").value = p.nome || "";
   document.getElementById("raca").value = p.raca || "";
@@ -1059,6 +1128,13 @@ if (resistenciasEl) {
 
   document.getElementById("preview").src = p.imagem || "";
   imagemBase64 = p.imagem || "";
+  imagemPosX = p.imagemPosX ?? 50;
+  imagemPosY = p.imagemPosY ?? 50;
+
+const preview = document.getElementById("preview");
+if (preview) {
+  preview.style.objectPosition = `${imagemPosX}% ${imagemPosY}%`;
+}
 
   const nomeArquivo = document.getElementById("nome-arquivo");
   if (nomeArquivo) {
@@ -1119,6 +1195,8 @@ function salvarTudo() {
   p.resistencias = document.getElementById("resistencias")?.value || "";
   p.diario = document.getElementById("diario")?.value || "";
   p.imagem = imagemBase64;
+  p.imagemPosX = imagemPosX;
+  p.imagemPosY = imagemPosY;
   p.proficienciasExtras = document.getElementById("proficienciasExtras")?.value || "";
   p.aliados = personagens[personagemAtual].aliados || [];
   p.resistencias = document.getElementById("resistencias")?.value || "";
@@ -1160,8 +1238,10 @@ function salvarTudo() {
   p.dtAtributo = dtAtributo ? dtAtributo.value : 0;
   p.dtProf = dtProf ? dtProf.value : 2;
 
-  salvarPersonagens();
+  const salvou = salvarPersonagens();
+if (salvou) {
   renderPersonagens();
+}
 }
 
 /* ================= IMAGEM ================= */
@@ -1179,10 +1259,16 @@ function previewImagem() {
   const reader = new FileReader();
   reader.onload = function (e) {
     imagemBase64 = e.target.result;
+    imagemPosX = 50;
+    imagemPosY = 50;
+
     preview.src = imagemBase64;
+    preview.style.objectPosition = `${imagemPosX}% ${imagemPosY}%`;
+
     salvarTudo();
     renderPersonagens();
   };
+
   reader.readAsDataURL(file);
 }
 
@@ -1217,17 +1303,36 @@ function renderDominio() {
 
 /* ================= INVENTÁRIO ================= */
 
+function toggleSintoniaItem() {
+  const requer = document.getElementById("itemRequerSintonia");
+  const box = document.getElementById("boxItemSintonizado");
+  const sintonizado = document.getElementById("itemSintonizado");
+
+  if (!requer || !box || !sintonizado) return;
+
+  if (requer.checked) {
+    box.style.display = "block";
+  } else {
+    box.style.display = "none";
+    sintonizado.checked = false;
+  }
+}
+
 function addItem() {
   const nome = document.getElementById("itemNome")?.value.trim();
   const desc = document.getElementById("itemDesc")?.value.trim();
   const qtd = parseInt(document.getElementById("itemQtd")?.value) || 1;
+  const requerSintonia = !!document.getElementById("itemRequerSintonia")?.checked;
+  const sintonizado = requerSintonia && !!document.getElementById("itemSintonizado")?.checked;
 
   if (!nome) return;
 
   const novoItem = {
     nome,
     desc,
-    qtd
+    qtd,
+    requerSintonia,
+    sintonizado
   };
 
   if (editandoItem >= 0) {
@@ -1243,6 +1348,9 @@ function addItem() {
   document.getElementById("itemNome").value = "";
   document.getElementById("itemDesc").value = "";
   document.getElementById("itemQtd").value = "";
+  document.getElementById("itemRequerSintonia").checked = false;
+  document.getElementById("itemSintonizado").checked = false;
+  document.getElementById("boxItemSintonizado").style.display = "none";
 }
 
 function renderInv() {
@@ -1256,25 +1364,177 @@ function renderInv() {
     li.className = "item-card";
 
     li.innerHTML = `
-  <div class="item-info" onclick="verItem(${index})" style="position: relative;">
-    <strong class="item-nome">
-  ${item.nome || "Sem nome"}
-</strong>
+      <div class="item-info" onclick="verItem(${index})">
+        <strong class="item-nome">
+          ${item.nome || "Sem nome"}
+          ${item.requerSintonia ? `<span class="item-tag-sintonia">${item.sintonizado ? "Sint." : "Req. Sint."}</span>` : ""}
+        </strong>
 
-${item.qtd > 1 ? `<span class="item-qtd">${item.qtd}</span>` : ""}
-    <p class="item-preview">
-      ${item.desc ? item.desc.substring(0, 60) + (item.desc.length > 60 ? "..." : "") : "Sem descrição"}
-    </p>
-  </div>
+        <span class="item-qtd">x${item.qtd || 1}</span>
 
-  <div class="item-acoes">
-    <button type="button" class="btn-editar" onclick="event.stopPropagation(); editarItem(${index})">🖊️</button>
-    <button type="button" class="item-remover" onclick="event.stopPropagation(); removerItem(${index})">X</button>
-  </div>
-`;
+        <p class="item-preview">
+          ${item.desc ? item.desc.substring(0, 60) + (item.desc.length > 60 ? "." : "") : "Sem descrição"}
+        </p>
+      </div>
+
+      <div class="item-acoes">
+        <div class="acoes-topo">
+          <button type="button" class="btn-mover" onclick="event.stopPropagation(); moverItemCima(${index})">↑</button>
+          <button type="button" class="btn-mover" onclick="event.stopPropagation(); moverItemBaixo(${index})">↓</button>
+          <button type="button" class="btn-editar" onclick="event.stopPropagation(); editarItem(${index})">✏️</button>
+        </div>
+
+        <button type="button" class="item-remover" onclick="event.stopPropagation(); removerItem(${index})">X</button>
+      </div>
+    `;
 
     ul.appendChild(li);
   });
+};
+
+function moverItemCima(index) {
+  if (index <= 0) return;
+
+  const lista = document.getElementById("lista");
+  const item = lista.children[index];
+
+  item.classList.add("item-animar-cima");
+
+  setTimeout(() => {
+    [inventario[index - 1], inventario[index]] = [inventario[index], inventario[index - 1]];
+    renderInv();
+    salvarTudo();
+  }, 200);
+}
+
+function abrirEditorImagem() {
+  if (!imagemBase64) {
+    alert("Escolha uma imagem primeiro.");
+    return;
+  }
+
+  const editorWrap = document.getElementById("editorImagemInline");
+  const editor = document.getElementById("previewEditor");
+
+  if (!editorWrap || !editor) return;
+
+  editor.src = imagemBase64;
+  editor.style.objectPosition = `${imagemPosX}% ${imagemPosY}%`;
+
+  editorWrap.classList.remove("fechado");
+  ativarDragEditorImagem();
+}
+
+function fecharEditorImagem() {
+  const editorWrap = document.getElementById("editorImagemInline");
+  if (editorWrap) {
+    editorWrap.classList.add("fechado");
+  }
+}
+
+function salvarEditorImagem() {
+  const preview = document.getElementById("preview");
+  if (preview) {
+    preview.style.objectPosition = `${imagemPosX}% ${imagemPosY}%`;
+  }
+
+  const antes = JSON.stringify(personagens);
+  salvarTudo();
+
+  try {
+    localStorage.setItem("personagens", JSON.stringify(personagens));
+    renderPersonagens();
+    fecharEditorImagem();
+  } catch (erro) {
+    console.error("Erro ao salvar imagem:", erro);
+    alert("Não deu para salvar porque o armazenamento do navegador lotou. Tente usar uma imagem menor.");
+    localStorage.setItem("personagens_backup", antes);
+  }
+}
+
+function ativarDragEditorImagem() {
+  const img = document.getElementById("previewEditor");
+  if (!img) return;
+
+  if (img.dataset.dragAtivo === "1") return;
+  img.dataset.dragAtivo = "1";
+
+  let arrastando = false;
+  let ultimoX = 0;
+  let ultimoY = 0;
+
+  function aplicarPosicao() {
+    imagemPosX = Math.max(0, Math.min(100, imagemPosX));
+    imagemPosY = Math.max(0, Math.min(100, imagemPosY));
+    img.style.objectPosition = `${imagemPosX}% ${imagemPosY}%`;
+  }
+
+  img.addEventListener("mousedown", (e) => {
+    arrastando = true;
+    ultimoX = e.clientX;
+    ultimoY = e.clientY;
+    e.preventDefault();
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!arrastando) return;
+
+    const dx = e.clientX - ultimoX;
+    const dy = e.clientY - ultimoY;
+
+    ultimoX = e.clientX;
+    ultimoY = e.clientY;
+
+    imagemPosX -= dx * 0.2;
+    imagemPosY -= dy * 0.2;
+
+    aplicarPosicao();
+  });
+
+  document.addEventListener("mouseup", () => {
+    arrastando = false;
+  });
+
+img.addEventListener("touchstart", (e) => {
+  if (!e.touches[0]) return;
+  arrastando = true;
+  ultimoX = e.touches[0].clientX;
+  ultimoY = e.touches[0].clientY;
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener("touchmove", (e) => {
+  if (!arrastando || !e.touches[0]) return;
+
+  const dx = e.touches[0].clientX - ultimoX;
+  const dy = e.touches[0].clientY - ultimoY;
+
+  ultimoX = e.touches[0].clientX;
+  ultimoY = e.touches[0].clientY;
+
+  imagemPosX -= dx * 0.2;
+  imagemPosY -= dy * 0.2;
+
+  aplicarPosicao();
+  e.preventDefault();
+}, { passive: false });
+
+  aplicarPosicao();
+}
+
+function moverItemBaixo(index) {
+  if (index >= inventario.length - 1) return;
+
+  const lista = document.getElementById("lista");
+  const item = lista.children[index];
+
+  item.classList.add("item-animar-baixo");
+
+  setTimeout(() => {
+    [inventario[index + 1], inventario[index]] = [inventario[index], inventario[index + 1]];
+    renderInv();
+    salvarTudo();
+  }, 200);
 }
 
 function verItem(index) {
@@ -1286,6 +1546,17 @@ function verItem(index) {
       <div>
         <span class="popup-label">Quantidade</span>
         <div class="popup-descricao">${item.qtd || 1}</div>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <span class="popup-label">Sintonia</span>
+        <div class="popup-descricao">
+          ${
+            item.requerSintonia
+              ? (item.sintonizado ? "Requer sintonia — Sintonizado" : "Requer sintonia — Não sintonizado")
+              : "Não requer sintonia"
+          }
+        </div>
       </div>
 
       <div style="margin-top: 12px;">
